@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Recipé">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#eef6fb">
+<title>Recipé</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sky-50: #eef6fb;
+  --sky-100: #e0eff7;
+  --sky-200: #c1dff0;
+  --sky-300: #96c9e3;
+  --sky-400: #6bb4d6;
+  --sky-500: #4a9cc2;
+  --sky-600: #3681a6;
+  --peach-bg: #fef0e6;
+  --peach-border: #f0c9a6;
+  --peach-text: #b87a42;
+  --mint-bg: #e4f2ed;
+  --mint-border: #a8d5c2;
+  --mint-text: #4a8a6e;
+  --lav-bg: #ece4f4;
+  --lav-border: #c4addb;
+  --lav-text: #7a57a0;
+  --cream: #fefcf8;
+  --text: #2c3338;
+  --text-mid: #5a6670;
+  --text-light: #8c969e;
+  --border: #d6dee4;
+  --border-light: #e8eef2;
+  --card-bg: #ffffff;
+  --r: 14px;
+  --r-sm: 10px;
+  --shadow-card: 0 1px 4px rgba(74,156,194,0.06), 0 1px 2px rgba(0,0,0,0.03);
+  --shadow-card-up: 0 6px 24px rgba(74,156,194,0.12), 0 2px 6px rgba(0,0,0,0.04);
+  --shadow-modal: 0 24px 64px rgba(44,51,56,0.18);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--sky-50);
+  color: var(--text);
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Ambient blobs */
+body::before, body::after {
+  content: ''; position: fixed; pointer-events: none; z-index: 0; border-radius: 50%;
+}
+body::before {
+  top: -30vh; left: -20vw; width: 70vw; height: 70vw;
+  background: radial-gradient(circle, rgba(150,201,227,0.22) 0%, transparent 70%);
+}
+body::after {
+  bottom: -25vh; right: -15vw; width: 55vw; height: 55vw;
+  background: radial-gradient(circle, rgba(254,240,230,0.25) 0%, transparent 70%);
+}
+
+/* Animations */
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+@keyframes scaleIn { from{opacity:0;transform:scale(0.96)} to{opacity:1;transform:scale(1)} }
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+
+/* Scrollbar */
+::-webkit-scrollbar { width:4px }
+::-webkit-scrollbar-thumb { background:var(--sky-200); border-radius:4px }
+
+/* Focus */
+input:focus, textarea:focus { border-color:var(--sky-400)!important; box-shadow:0 0 0 3px rgba(74,156,194,0.1)!important; outline:none; }
+
+/* App shell */
+#app { position:relative; z-index:1; min-height:100vh; min-height:100dvh; padding-bottom:calc(90px + var(--safe-bottom)); }
+
+/* Header */
+.header {
+  position:sticky; top:0; z-index:100;
+  padding: calc(var(--safe-top) + 16px) 20px 0;
+  background: linear-gradient(to bottom, var(--sky-50) 75%, transparent);
+}
+.header-row { display:flex; justify-content:space-between; align-items:center; }
+.logo { font-family:'Fraunces',serif; font-size:26px; font-weight:700; color:var(--text); letter-spacing:-0.5px; }
+.logo span { color:var(--sky-500); }
+.sub { font-size:12px; color:var(--text-light); font-weight:300; margin-top:1px; }
+.gear-btn {
+  width:38px; height:38px; border-radius:var(--r-sm); border:1.5px solid var(--border);
+  background:var(--card-bg); cursor:pointer; display:flex; align-items:center; justify-content:center;
+  font-size:16px; color:var(--text-light); transition:all .15s;
+}
+.gear-btn:active { transform:scale(0.93); }
+
+/* Nav */
+.nav { display:flex; gap:4px; margin-top:14px; background:var(--card-bg); border-radius:12px; padding:3px; box-shadow:var(--shadow-card); }
+.nav button {
+  flex:1; padding:10px 0; border-radius:9px; border:none; font-size:13px;
+  font-family:'DM Sans',sans-serif; cursor:pointer; transition:all .15s;
+  background:transparent; color:var(--text-light); font-weight:400;
+}
+.nav button.active { background:var(--sky-100); color:var(--sky-600); font-weight:600; }
+
+/* Kanban column */
+.col { margin-top:20px; }
+.col-head { display:flex; align-items:center; gap:8px; padding:0 20px; margin-bottom:8px; }
+.col-dot { width:9px; height:9px; border-radius:50%; }
+.col-title { font-family:'Fraunces',serif; font-size:15px; font-weight:500; }
+.col-count { font-size:11px; color:var(--text-light); background:var(--border-light); border-radius:8px; padding:2px 7px; }
+.col-empty {
+  margin:0 20px; padding:14px; border-radius:12px; border:1.5px dashed var(--border);
+  text-align:center; font-size:12px; color:var(--text-light);
+}
+
+/* Card */
+.card {
+  background:var(--card-bg); border-radius:var(--r); padding:13px 14px;
+  margin:0 20px 8px; box-shadow:var(--shadow-card); cursor:pointer;
+  transition:all .15s; border:1px solid rgba(0,0,0,0.02);
+  animation: fadeUp .3s ease both;
+}
+.card:active { transform:scale(0.98); box-shadow:var(--shadow-card-up); }
+.card-name { font-family:'Fraunces',serif; font-size:14.5px; font-weight:500; color:var(--text); margin-bottom:3px; }
+.card-meta { display:flex; justify-content:space-between; align-items:center; }
+.card-cuisine { font-size:12px; color:var(--text-light); }
+
+/* Stars */
+.stars { display:flex; gap:1px; }
+.star { cursor:default; flex-shrink:0; }
+.star.interactive { cursor:pointer; }
+
+/* Tag / chip */
+.tag {
+  display:inline-block; font-size:11px; padding:3px 9px; border-radius:8px;
+  font-weight:500; white-space:nowrap;
+}
+.tag-wtt { background:var(--sky-100); color:var(--sky-600); }
+.tag-cs { background:var(--peach-bg); color:var(--peach-text); }
+.tag-c { background:var(--mint-bg); color:var(--mint-text); }
+.tag-f { background:var(--lav-bg); color:var(--lav-text); }
+
+.chip {
+  padding:6px 13px; border-radius:20px; border:1.5px solid var(--border);
+  background:var(--card-bg); color:var(--text-light); font-size:12.5px;
+  font-family:'DM Sans',sans-serif; font-weight:400; cursor:pointer;
+  transition:all .15s; white-space:nowrap;
+}
+.chip.on { border-color:var(--sky-400); background:rgba(74,156,194,0.08); color:var(--sky-600); font-weight:600; }
+.chip:active { transform:scale(0.95); }
+
+/* Buttons */
+.btn {
+  padding:11px 22px; border-radius:12px; font-size:13.5px; font-weight:600;
+  font-family:'DM Sans',sans-serif; cursor:pointer; transition:all .15s; border:none;
+}
+.btn:active { transform:scale(0.97); }
+.btn-primary { background:linear-gradient(135deg,var(--sky-400),var(--sky-600)); color:#fff; }
+.btn-ghost { background:var(--card-bg); color:var(--text-light); border:1.5px solid var(--border); }
+.btn-danger { background:var(--card-bg); color:#d46b6b; border:1.5px solid #f0c6c6; }
+.btn-full { width:100%; }
+
+/* FAB */
+.fab {
+  position:fixed; bottom:calc(24px + var(--safe-bottom)); right:20px;
+  width:54px; height:54px; border-radius:50%; border:none;
+  background:linear-gradient(135deg,var(--sky-400),var(--sky-600));
+  color:#fff; font-size:28px; font-weight:300; cursor:pointer;
+  box-shadow:0 4px 16px rgba(74,156,194,0.35); z-index:200;
+  display:flex; align-items:center; justify-content:center; transition:transform .12s;
+}
+.fab:active { transform:scale(0.9); }
+
+/* Modal overlay */
+.overlay {
+  position:fixed; inset:0; background:rgba(44,51,56,0.28); backdrop-filter:blur(3px);
+  z-index:1000; display:flex; align-items:flex-end; justify-content:center;
+  animation:fadeIn .15s ease;
+}
+.modal {
+  background:var(--card-bg); border-radius:20px 20px 0 0; width:100%; max-width:540px;
+  max-height:calc(90vh - var(--safe-top)); overflow-y:auto; animation:slideUp .25s ease;
+  padding-bottom:calc(20px + var(--safe-bottom));
+  box-shadow:var(--shadow-modal);
+}
+.modal-inner { padding:24px 22px; }
+.modal-title { font-family:'Fraunces',serif; font-size:21px; font-weight:600; margin-bottom:4px; }
+.modal-sub { font-size:12.5px; color:var(--text-light); margin-bottom:18px; line-height:1.4; }
+.modal-handle { width:36px; height:4px; border-radius:2px; background:var(--border); margin:10px auto 0; }
+
+/* Form */
+.field { margin-bottom:14px; }
+.field-label { font-size:12px; font-weight:600; color:var(--text-light); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; }
+.input {
+  width:100%; padding:11px 13px; border-radius:11px; border:1.5px solid var(--border);
+  font-size:14px; font-family:'DM Sans',sans-serif; background:var(--cream);
+  color:var(--text); transition:all .15s;
+}
+.textarea { resize:vertical; min-height:72px; line-height:1.5; }
+.chip-group { display:flex; flex-wrap:wrap; gap:6px; }
+.btn-row { display:flex; gap:10px; margin-top:18px; }
+
+/* Search */
+.search-wrap { padding:16px 20px 6px; }
+
+/* Suggest */
+.suggest-section { padding:16px 20px; }
+.suggest-card {
+  background:var(--card-bg); border-radius:16px; padding:18px; box-shadow:var(--shadow-card);
+  margin-bottom:14px;
+}
+.suggest-card h3 { font-family:'Fraunces',serif; font-size:16px; font-weight:500; margin-bottom:4px; }
+.suggest-card p { font-size:12.5px; color:var(--text-light); line-height:1.45; margin-bottom:12px; }
+
+.prompt-box {
+  background:var(--cream); border-radius:11px; padding:14px; font-size:12.5px;
+  line-height:1.6; color:var(--text-mid); white-space:pre-wrap; max-height:280px;
+  overflow-y:auto; border:1px solid var(--border-light); font-family:'DM Sans',monospace;
+}
+
+.empty-state { text-align:center; padding:40px 20px; color:var(--text-light); font-size:13.5px; }
+.empty-icon { font-size:40px; margin-bottom:10px; display:block; }
+
+/* Detail */
+.detail-cuisine { font-size:12.5px; color:var(--text-light); }
+.detail-source a { color:var(--sky-500); text-decoration:none; font-size:13px; }
+.detail-block { margin-bottom:14px; }
+.detail-block-title { font-size:11.5px; font-weight:600; color:var(--text-light); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.4px; }
+.detail-block-body { font-size:13.5px; line-height:1.6; color:var(--text-mid); white-space:pre-wrap; }
+.move-label { font-size:12px; color:var(--text-light); margin-bottom:8px; }
+
+/* Toast */
+.toast {
+  position:fixed; bottom:calc(90px + var(--safe-bottom)); left:50%; transform:translateX(-50%);
+  background:var(--text); color:#fff; padding:9px 20px; border-radius:24px;
+  font-size:13px; font-weight:500; z-index:2000; animation:fadeUp .2s ease;
+  box-shadow:0 4px 14px rgba(0,0,0,0.2);
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ─── State ─── */
+const STORAGE_KEY = 'recipe-app-v1';
+const COLUMNS = ['Want to Try','Cooking Soon','Cooked','Favourite'];
+const CUISINES = ['Italian','Mexican','Japanese','Indian','Thai','Chinese','French','Mediterranean','Korean','American','Middle Eastern','Vietnamese','Greek','Ethiopian','British','Other'];
+const TAG_CLS = {'Want to Try':'wtt','Cooking Soon':'cs','Cooked':'c','Favourite':'f'};
+const COL_COLORS = {'Want to Try':'var(--sky-400)','Cooking Soon':'var(--peach-border)','Cooked':'var(--mint-border)','Favourite':'var(--lav-border)'};
+
+let state = { recipes:[], preferences:{ cuisines:[], dietaryNotes:'', favIngredients:'' }, nextId:1 };
+let view = 'board';
+let toastTimer = null;
+
+function load() {
+  try { const s = localStorage.getItem(STORAGE_KEY); if(s) state = JSON.parse(s); } catch(e){}
+}
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
+}
+function showToast(msg) {
+  clearTimeout(toastTimer);
+  document.querySelector('.toast')?.remove();
+  const t = document.createElement('div'); t.className='toast'; t.textContent=msg;
+  document.getElementById('app').appendChild(t);
+  toastTimer = setTimeout(()=>t.remove(), 2200);
+}
+
+/* ─── Stars SVG ─── */
+function starSVG(filled, size=18) {
+  const col = filled ? '#f0b429' : '#d4dbe0';
+  const str = filled ? '#dea015' : '#c4ccd0';
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="${col}" stroke="${str}" stroke-width="0.6"/></svg>`;
+}
+function starsHTML(rating, size=16) {
+  let h='';
+  for(let i=1;i<=5;i++) h+=starSVG(rating>=i, size);
+  return `<span class="stars">${h}</span>`;
+}
+function interactiveStars(rating, size=24, onRate) {
+  const id = 'stars-'+Math.random().toString(36).slice(2,8);
+  setTimeout(()=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.querySelectorAll('.star').forEach(s=>{
+      s.addEventListener('click',()=>{ onRate(parseInt(s.dataset.v)); render(); });
+    });
+  },0);
+  let h='';
+  for(let i=1;i<=5;i++) h+=`<span class="star interactive" data-v="${i}">${starSVG(rating>=i, size)}</span>`;
+  return `<span class="stars" id="${id}">${h}</span>`;
+}
+
+/* ─── Tag class ─── */
+function tagHTML(status) {
+  return `<span class="tag tag-${TAG_CLS[status]||'wtt'}">${status}</span>`;
+}
+
+/* ─── Chip HTML ─── */
+function chipHTML(label, selected, onclick, dataAttr='') {
+  return `<button class="chip${selected?' on':''}" onclick="${onclick}" ${dataAttr}>${label}</button>`;
+}
+
+/* ─── Suggestion engine ─── */
+function getSuggestions() {
+  const cooked = state.recipes.filter(r=>(r.status==='Cooked'||r.status==='Favourite')&&r.rating>0);
+  if(!cooked.length) return [];
+  const cuisineW={};
+  cooked.forEach(r=>{ if(r.cuisine) cuisineW[r.cuisine]=(cuisineW[r.cuisine]||0)+r.rating/5; });
+  const prefC = new Set(state.preferences.cuisines||[]);
+  return state.recipes
+    .filter(r=>r.status==='Want to Try')
+    .map(r=>{
+      let score=2;
+      if(r.cuisine&&cuisineW[r.cuisine]) score+=cuisineW[r.cuisine]*1.5;
+      if(r.cuisine&&prefC.has(r.cuisine)) score+=3;
+      return {...r, score, reason:'In your Want to Try list'};
+    })
+    .sort((a,b)=>b.score-a.score)
+    .slice(0,6);
+}
+
+/* ─── Prompt generator ─── */
+function generatePrompt() {
+  const rated = state.recipes.filter(r=>r.rating>0).sort((a,b)=>b.rating-a.rating);
+  const top = rated.filter(r=>r.rating>=4).slice(0,8);
+  const low = rated.filter(r=>r.rating<=2).slice(0,4);
+  const p = state.preferences;
+  let t = `I'm looking for new recipe suggestions based on my cooking history and preferences.\n\n`;
+  t += `**My preferred cuisines:** ${(p.cuisines||[]).join(', ')||'No specific preference'}\n`;
+  if(p.dietaryNotes) t+=`**Dietary notes:** ${p.dietaryNotes}\n`;
+  if(p.favIngredients) t+=`**Favourite ingredients:** ${p.favIngredients}\n`;
+  t+=`\n**Recipes I've loved (4-5 stars):**\n`;
+  if(top.length) top.forEach(r=>{ t+=`- ${r.name}${r.cuisine?' ('+r.cuisine+')':''}  — ${r.rating}/5\n`; });
+  else t+=`- (none yet)\n`;
+  t+=`\n**Recipes I rated lower (1-2 stars):**\n`;
+  if(low.length) low.forEach(r=>{ t+=`- ${r.name}${r.cuisine?' ('+r.cuisine+')':''}  — ${r.rating}/5\n`; });
+  else t+=`- (none yet)\n`;
+  t+=`\nPlease suggest 5-8 specific recipes I should try, with a brief note on why each matches my taste. Include the recipe name, cuisine, and key ingredients.`;
+  return t;
+}
+
+/* ─── Modal system ─── */
+function openModal(contentFn) {
+  closeModal();
+  const ov = document.createElement('div'); ov.className='overlay'; ov.id='modal-overlay';
+  ov.addEventListener('click',e=>{ if(e.target===ov) closeModal(); });
+  const m = document.createElement('div'); m.className='modal';
+  m.innerHTML = `<div class="modal-handle"></div><div class="modal-inner" id="modal-body"></div>`;
+  ov.appendChild(m);
+  document.getElementById('app').appendChild(ov);
+  contentFn(document.getElementById('modal-body'));
+}
+function closeModal() {
+  document.getElementById('modal-overlay')?.remove();
+}
+
+/* ─── Recipe form ─── */
+function openRecipeForm(recipe) {
+  const isEdit = !!recipe?.id;
+  const form = recipe ? {...recipe} : { name:'',cuisine:'',status:'Want to Try',rating:0,source:'',ingredients:'',notes:'' };
+  openModal(el=>{
+    function renderForm() {
+      el.innerHTML = `
+        <h2 class="modal-title">${isEdit?'Edit Recipe':'Add Recipe'}</h2>
+        <div class="field">
+          <input class="input" id="f-name" placeholder="Recipe name *" value="${esc(form.name)}">
+        </div>
+        <div class="field">
+          <div class="field-label">Cuisine</div>
+          <div class="chip-group" id="f-cuisine">${CUISINES.map(c=>chipHTML(c, form.cuisine===c, `window._setCuisine('${c}')`)).join('')}</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Status</div>
+          <div class="chip-group" id="f-status">${COLUMNS.map(c=>chipHTML(c, form.status===c, `window._setStatus('${esc(c)}')`)).join('')}</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Rating</div>
+          <div id="f-rating"></div>
+        </div>
+        <div class="field">
+          <input class="input" id="f-source" placeholder="Source / URL (optional)" value="${esc(form.source||'')}">
+        </div>
+        <div class="field">
+          <textarea class="input textarea" id="f-ingredients" placeholder="Ingredients (optional)">${esc(form.ingredients||'')}</textarea>
+        </div>
+        <div class="field">
+          <textarea class="input textarea" id="f-notes" placeholder="Instructions / notes (optional)">${esc(form.notes||'')}</textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-primary" style="flex:1" id="f-save">Save</button>
+        </div>
+      `;
+      // Rating
+      document.getElementById('f-rating').innerHTML = interactiveStars(form.rating, 28, v=>{ form.rating = form.rating===v?0:v; renderForm(); });
+      // Save
+      document.getElementById('f-save').addEventListener('click',()=>{
+        form.name = document.getElementById('f-name').value.trim();
+        form.source = document.getElementById('f-source').value.trim();
+        form.ingredients = document.getElementById('f-ingredients').value.trim();
+        form.notes = document.getElementById('f-notes').value.trim();
+        if(!form.name) { document.getElementById('f-name').style.borderColor='#d46b6b'; return; }
+        if(isEdit) {
+          state.recipes = state.recipes.map(r=>r.id===form.id?form:r);
+        } else {
+          form.id = state.nextId++;
+          form.createdAt = Date.now();
+          state.recipes.push(form);
+        }
+        save(); closeModal(); render();
+        showToast(isEdit?'Recipe updated':'Recipe added!');
+      });
+    }
+    window._setCuisine = c=>{ form.cuisine = form.cuisine===c?'':c; renderForm(); };
+    window._setStatus = c=>{ form.status = c; renderForm(); };
+    renderForm();
+  });
+}
+
+/* ─── Recipe detail ─── */
+function openDetail(recipe) {
+  openModal(el=>{
+    const r = recipe;
+    el.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+        <div>
+          <h2 class="modal-title">${esc(r.name)}</h2>
+          ${r.cuisine?`<span class="detail-cuisine">${esc(r.cuisine)}</span>`:''}
+        </div>
+        ${tagHTML(r.status)}
+      </div>
+      <div style="margin:12px 0" id="det-stars"></div>
+      ${r.source?`<div class="detail-source" style="margin-bottom:10px"><a href="${r.source.startsWith('http')?esc(r.source):'https://'+esc(r.source)}" target="_blank" rel="noopener">${esc(r.source.length>45?r.source.slice(0,45)+'…':r.source)}</a></div>`:''}
+      ${r.ingredients?`<div class="detail-block"><div class="detail-block-title">Ingredients</div><div class="detail-block-body">${esc(r.ingredients)}</div></div>`:''}
+      ${r.notes?`<div class="detail-block"><div class="detail-block-title">Notes / Instructions</div><div class="detail-block-body">${esc(r.notes)}</div></div>`:''}
+      <div class="move-label">Move to:</div>
+      <div class="chip-group" style="margin-bottom:16px">
+        ${COLUMNS.filter(c=>c!==r.status).map(c=>`<button class="chip" onclick="window._moveTo('${esc(c)}')">${c}</button>`).join('')}
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="window._editCurrent()">Edit</button>
+        <button class="btn btn-danger" onclick="window._deleteCurrent()">Delete</button>
+      </div>
+    `;
+    document.getElementById('det-stars').innerHTML = interactiveStars(r.rating, 24, v=>{
+      r.rating = r.rating===v?0:v;
+      state.recipes = state.recipes.map(x=>x.id===r.id?{...x,rating:r.rating}:x);
+      save();
+      document.getElementById('det-stars').innerHTML = interactiveStars(r.rating, 24, ()=>{});
+    });
+    window._moveTo = col=>{
+      state.recipes = state.recipes.map(x=>x.id===r.id?{...x,status:col}:x);
+      save(); closeModal(); render(); showToast('Moved to '+col);
+    };
+    window._editCurrent = ()=>{ closeModal(); setTimeout(()=>openRecipeForm(state.recipes.find(x=>x.id===r.id)),100); };
+    window._deleteCurrent = ()=>{ if(!confirm('Delete this recipe?')) return; state.recipes=state.recipes.filter(x=>x.id!==r.id); save(); closeModal(); render(); showToast('Recipe removed'); };
+  });
+}
+
+/* ─── Preferences ─── */
+function openPrefs() {
+  const p = {...state.preferences, cuisines:[...(state.preferences.cuisines||[])]};
+  openModal(el=>{
+    function renderPrefs() {
+      el.innerHTML = `
+        <h2 class="modal-title">Preferences</h2>
+        <p class="modal-sub">These shape your suggestions and the AI prompt.</p>
+        <div class="field">
+          <div class="field-label">Preferred Cuisines</div>
+          <div class="chip-group">${CUISINES.map(c=>chipHTML(c, p.cuisines.includes(c), `window._togglePrefC('${c}')`)).join('')}</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Dietary Notes</div>
+          <input class="input" id="p-diet" placeholder="e.g. vegetarian, no shellfish…" value="${esc(p.dietaryNotes||'')}">
+        </div>
+        <div class="field">
+          <div class="field-label">Favourite Ingredients</div>
+          <input class="input" id="p-fav" placeholder="e.g. garlic, lemon, chilli, miso…" value="${esc(p.favIngredients||'')}">
+        </div>
+        <button class="btn btn-primary btn-full" style="margin-top:10px" id="p-save">Save Preferences</button>
+      `;
+      document.getElementById('p-save').addEventListener('click',()=>{
+        p.dietaryNotes = document.getElementById('p-diet').value.trim();
+        p.favIngredients = document.getElementById('p-fav').value.trim();
+        state.preferences = p; save(); closeModal(); render(); showToast('Preferences saved');
+      });
+    }
+    window._togglePrefC = c=>{ const i=p.cuisines.indexOf(c); if(i>=0) p.cuisines.splice(i,1); else p.cuisines.push(c); renderPrefs(); };
+    renderPrefs();
+  });
+}
+
+/* ─── Prompt modal ─── */
+function openPrompt() {
+  const prompt = generatePrompt();
+  openModal(el=>{
+    el.innerHTML = `
+      <h2 class="modal-title">Your AI Prompt</h2>
+      <p class="modal-sub">Copy this and paste into Claude, ChatGPT, or any AI chat for personalised recipe suggestions.</p>
+      <div class="prompt-box">${esc(prompt)}</div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+        <button class="btn btn-primary" style="flex:1" id="copy-prompt">Copy Prompt</button>
+      </div>
+    `;
+    document.getElementById('copy-prompt').addEventListener('click',()=>{
+      navigator.clipboard.writeText(prompt).then(()=>{
+        document.getElementById('copy-prompt').textContent='✓ Copied!';
+        setTimeout(()=>{try{document.getElementById('copy-prompt').textContent='Copy Prompt';}catch(e){}},2000);
+      });
+    });
+  });
+}
+
+/* ─── HTML escape ─── */
+function esc(s) { const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+
+/* ─── Render ─── */
+function render() {
+  const app = document.getElementById('app');
+  let h = `
+    <header class="header">
+      <div class="header-row">
+        <div>
+          <div class="logo">Recip<span>é</span></div>
+          <div class="sub">${state.recipes.length} recipe${state.recipes.length!==1?'s':''} in your collection</div>
+        </div>
+        <button class="gear-btn" onclick="openPrefs()">⚙</button>
+      </div>
+      <nav class="nav">
+        <button class="${view==='board'?'active':''}" onclick="window._setView('board')">Board</button>
+        <button class="${view==='all'?'active':''}" onclick="window._setView('all')">All</button>
+        <button class="${view==='suggest'?'active':''}" onclick="window._setView('suggest')">Suggest</button>
+      </nav>
+    </header>
+  `;
+
+  if(view==='board') {
+    COLUMNS.forEach(col=>{
+      const items = state.recipes.filter(r=>r.status===col);
+      h+=`<div class="col">
+        <div class="col-head">
+          <div class="col-dot" style="background:${COL_COLORS[col]}"></div>
+          <span class="col-title">${col}</span>
+          <span class="col-count">${items.length}</span>
+        </div>`;
+      if(!items.length) h+=`<div class="col-empty">No recipes yet</div>`;
+      items.forEach((r,i)=>{
+        h+=`<div class="card" style="animation-delay:${i*0.04}s" onclick="openDetail(state.recipes.find(x=>x.id===${r.id}))">
+          <div class="card-name">${esc(r.name)}</div>
+          <div class="card-meta">
+            <span class="card-cuisine">${esc(r.cuisine||'')}</span>
+            ${r.rating>0?starsHTML(r.rating,13):''}
+          </div>
+        </div>`;
+      });
+      h+=`</div>`;
+    });
+  } else if(view==='all') {
+    h+=`<div class="search-wrap"><input class="input" id="search-input" placeholder="Search recipes…"></div><div id="all-list"></div>`;
+  } else if(view==='suggest') {
+    h+=`<div class="suggest-section">
+      <div class="suggest-card">
+        <h3>Get AI Suggestions</h3>
+        <p>Generate a tailored prompt from your ratings and preferences, then paste it into Claude or any AI chat for personalised recipe ideas.</p>
+        <button class="btn btn-primary btn-full" onclick="openPrompt()">Generate Prompt</button>
+      </div>`;
+    const sugg = getSuggestions();
+    if(sugg.length) {
+      h+=`<h3 style="font-family:'Fraunces',serif;font-size:16px;font-weight:500;margin:18px 0 10px">From Your List</h3>`;
+      sugg.forEach(r=>{
+        h+=`<div class="card" style="margin:0 0 8px" onclick="openDetail(state.recipes.find(x=>x.id===${r.id}))">
+          <div class="card-name">${esc(r.name)}</div>
+          <div style="font-size:12px;color:var(--text-light)">${esc(r.reason)}</div>
+        </div>`;
+      });
+    }
+    const hasRated = state.recipes.some(r=>r.rating>0);
+    if(!hasRated) {
+      h+=`<div class="empty-state"><span class="empty-icon">🍽️</span>Rate some recipes to unlock smart suggestions</div>`;
+    }
+    h+=`</div>`;
+  }
+
+  h+=`<button class="fab" onclick="openRecipeForm()">+</button>`;
+  app.innerHTML = h;
+
+  // Search binding for "all" view
+  if(view==='all') {
+    const inp = document.getElementById('search-input');
+    const renderList = ()=>{
+      const q = (inp?.value||'').toLowerCase();
+      const filtered = state.recipes.filter(r=>r.name.toLowerCase().includes(q)||(r.cuisine||'').toLowerCase().includes(q));
+      const list = document.getElementById('all-list');
+      if(!list) return;
+      if(!filtered.length) { list.innerHTML=`<div class="empty-state">No recipes found</div>`; return; }
+      list.innerHTML = filtered.map(r=>`
+        <div class="card" style="margin:0 20px 8px;display:flex;justify-content:space-between;align-items:center" onclick="openDetail(state.recipes.find(x=>x.id===${r.id}))">
+          <div>
+            <div class="card-name">${esc(r.name)}</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="card-cuisine">${esc(r.cuisine||'')}</span>
+              ${tagHTML(r.status)}
+            </div>
+          </div>
+          ${r.rating>0?starsHTML(r.rating,13):''}
+        </div>
+      `).join('');
+    };
+    inp?.addEventListener('input', renderList);
+    renderList();
+  }
+}
+
+window._setView = v=>{ view=v; render(); };
+
+/* ─── Init ─── */
+load();
+render();
+</script>
+</body>
+</html>
